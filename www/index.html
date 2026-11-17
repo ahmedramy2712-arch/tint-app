@@ -7,10 +7,10 @@
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='120' fill='%23c8f542'/%3E%3Cpath fill='%230d0d0f' d='M216 106h80c60 0 110 48 110 108v24c0 60-50 108-110 108h-46l-72 62v-70c-34-18-62-52-62-100v-24c0-60 50-108 100-108z'/%3E%3Ccircle cx='256' cy='226' r='40' fill='%23c8f542'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&display=swap">
 <style>
-:root{--bg:#f6f5f1;--surface:#f6f5f1;--soft:#ebeae4;--text:#0d0d0f;--muted:#8a8a85;--border:#d6d5cf;--theirs:transparent;--theirs-text:#0d0d0f;--acc:#c8f542;--on:#0d0d0f;
+:root{--bg:#f6f5f1;--surface:#f6f5f1;--soft:#ebeae4;--text:#0d0d0f;--muted:#8a8a85;--border:#d6d5cf;--theirs:#e9e8e2;--theirs-text:#0d0d0f;--acc:#c8f542;--on:#0d0d0f;
 box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0b0b0c;--surface:#0b0b0c;--soft:#1a1a1c;--text:#f3f2ee;--muted:#76766f;--border:#2c2c30;--theirs-text:#f3f2ee;color-scheme:dark}}
-:root[data-theme="dark"]{--bg:#0b0b0c;--surface:#0b0b0c;--soft:#1a1a1c;--text:#f3f2ee;--muted:#76766f;--border:#2c2c30;--theirs-text:#f3f2ee;color-scheme:dark}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0b0b0c;--surface:#0b0b0c;--soft:#1a1a1c;--text:#f3f2ee;--muted:#76766f;--border:#2c2c30;--theirs:#232326;--theirs-text:#f3f2ee;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0b0b0c;--surface:#0b0b0c;--soft:#1a1a1c;--text:#f3f2ee;--muted:#76766f;--border:#2c2c30;--theirs:#232326;--theirs-text:#f3f2ee;color-scheme:dark}
 html{height:100%;scroll-padding-top:env(safe-area-inset-top,0px)}
 *{box-sizing:border-box}
 body{margin:0;height:100%;background:var(--bg);color:var(--text);font:16px/1.35 "Space Grotesk",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;letter-spacing:-.01em;display:flex;flex-direction:column;overflow:hidden}
@@ -27,11 +27,17 @@ header{display:flex;align-items:center;gap:10px;padding:14px 18px 10px;backgroun
 #list{flex:1;overflow-y:auto;padding:8px 16px 8px;display:flex;flex-direction:column;gap:3px;transition:background-color 1s ease}
 .row{display:flex;flex-direction:column;max-width:78%}
 .row.me{align-self:flex-end;align-items:flex-end}
+.row.them{align-self:flex-start;align-items:flex-start}
 .row.first{margin-top:10px}
 .name{font-size:11px;color:var(--muted);margin:0 12px 3px;text-transform:lowercase}
 .bubble{padding:9px 15px;border-radius:22px;white-space:pre-wrap;overflow-wrap:anywhere;font-weight:500}
-.bubble.me,.me .bubble{background:var(--acc);color:var(--on);border-bottom-right-radius:6px}
-.bubble.them,.them .bubble{background:var(--theirs);color:var(--theirs-text);border:1.5px solid var(--border);padding:7.5px 13.5px;border-bottom-left-radius:6px}
+.bubble.me,.me .bubble{background:var(--acc);color:var(--on)}
+.bubble.them,.them .bubble{background:var(--theirs);color:var(--theirs-text)}
+.row.me:not(.first) .bubble{border-top-right-radius:6px}
+.row.me:not(.last) .bubble{border-bottom-right-radius:6px}
+.row.them:not(.first) .bubble{border-top-left-radius:6px}
+.row.them:not(.last) .bubble{border-bottom-left-radius:6px}
+.sep{align-self:center;font-size:12px;color:var(--muted);margin:16px 0 6px;text-align:center}
 .time{font-size:10px;color:var(--muted);margin:3px 10px 0}
 #empty{margin:auto;color:var(--muted);text-align:center;font-size:15px}
 form{display:flex;align-items:center;gap:8px;padding:10px 14px 14px;background:var(--bg)}
@@ -171,7 +177,7 @@ h3{font-size:13px;color:var(--muted);text-transform:lowercase;margin:20px 0 9px;
 <script type="module">
 import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {getAuth,createUserWithEmailAndPassword,signInWithEmailAndPassword,signOut,onAuthStateChanged} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import {getFirestore,doc,getDoc,setDoc,updateDoc,addDoc,collection,query,orderBy,limit,where,onSnapshot,writeBatch} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import {getFirestore,doc,getDoc,setDoc,updateDoc,addDoc,collection,query,orderBy,limit,where,onSnapshot,writeBatch,serverTimestamp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 var $=function(i){return document.getElementById(i)},root=document.documentElement,cfg=window.TINT_FIREBASE;
 var THEMES=[['Lime','#c8f542','#0d0d0f'],['Lilac','#c5b3ff','#0d0d0f'],['Peach','#ffb59e','#0d0d0f'],['Sky','#9fd6ff','#0d0d0f'],['Bubblegum','#ff9ed2','#0d0d0f'],['Mono','var(--text)','var(--bg)']];
@@ -205,6 +211,8 @@ function show(v){['auth','home','chat'].forEach(function(k){$('v-'+k).classList.
 function other(c){return c.members.filter(function(u){return u!==me.uid})[0]}
 function cname(c){var o=other(c);return (c.names&&c.names[o])||'chat'}
 function fmt(ts){try{var d=new Date(ts),n=new Date();return d.toDateString()===n.toDateString()?d.toLocaleTimeString([], {hour:'numeric',minute:'2-digit'}):d.toLocaleDateString([], {month:'short',day:'numeric'})}catch(e){return ''}}
+function fixTs(x){if(x.ts&&x.ts.toMillis)x.ts=x.ts.toMillis();return x}
+function sepFmt(ts){try{var d=new Date(ts),t=d.toLocaleTimeString([], {hour:'numeric',minute:'2-digit'});return d.toDateString()===new Date().toDateString()?t:d.toLocaleDateString([], {weekday:'long',day:'numeric',month:'short'})+' • '+t}catch(e){return ''}}
 var AL='ABCDEFGHJKMNPQRSTUVWXYZ23456789';
 function genCode(){var c='';for(var i=0;i<6;i++)c+=AL[Math.floor(Math.random()*AL.length)];return c}
 
@@ -233,11 +241,13 @@ function renderMsgs(){
   if(!msgs.length){var e=document.createElement('div');e.id='empty';e.textContent='nobody has said anything yet. be the first ✌️';list.appendChild(e)}
   var last=null;
   msgs.forEach(function(m,i){
+    var pv=msgs[i-1];
+    if(!pv||m.ts-pv.ts>3600000){var sp=document.createElement('div');sp.className='sep';sp.textContent=sepFmt(m.ts);list.appendChild(sp);last=null}
     var mine=m.uid===me.uid,first=m.uid!==last,row=document.createElement('div');
     row.className='row '+(mine?'me':'them')+(first?' first':'');
     var b=document.createElement('div');b.className='bubble';b.textContent=m.text;row.appendChild(b);
     var nx=msgs[i+1];
-    if(!nx||nx.uid!==m.uid){var tm=document.createElement('div');tm.className='time';tm.textContent=fmt(m.ts);row.appendChild(tm)}
+    if(!nx||nx.uid!==m.uid||nx.ts-m.ts>3600000)row.classList.add('last');
     list.appendChild(row);last=m.uid;
   });
   if(near)list.scrollTop=list.scrollHeight;
@@ -251,7 +261,7 @@ function openChat(id){
   if(first){
     msgs=[];renderMsgs();if(uM){uM();uM=null}
     uM=onSnapshot(query(collection(db,'chats',id,'messages'),orderBy('ts','desc'),limit(150)),function(sn){
-      msgs=sn.docs.map(function(d){return d.data()}).reverse();renderMsgs();$('list').scrollTop=$('list').scrollHeight;
+      msgs=sn.docs.map(function(d){return fixTs(d.data({serverTimestamps:'estimate'}))}).reverse();renderMsgs();$('list').scrollTop=$('list').scrollHeight;
     },function(){$('st').textContent='could not load messages'});
   }
 }
@@ -268,10 +278,10 @@ $('f').addEventListener('submit',async function(ev){
   ev.preventDefault();
   var text=$('t').value.trim();if(!text||!cur)return;
   $('t').value='';$('st').textContent='';
-  var ts=Date.now(),m={uid:me.uid,name:me.name,text:text,ts:ts,mood:detect(text)};
+  var m={uid:me.uid,name:me.name,text:text,ts:serverTimestamp(),mood:detect(text)};
   try{
     await addDoc(collection(db,'chats',cur.id,'messages'),m);
-    await updateDoc(doc(db,'chats',cur.id),{last:text.slice(0,80),ts:ts});
+    await updateDoc(doc(db,'chats',cur.id),{last:text.slice(0,80),ts:serverTimestamp()});
   }catch(e){$('t').value=text;$('st').textContent='could not send';setTimeout(function(){$('st').textContent=''},3000)}
 });
 
@@ -343,7 +353,7 @@ else{
     }catch(e){$('aerr').textContent=e&&e.code==='permission-denied'?'firebase rules are not set up yet':'could not load your account ('+((e&&e.code)||'error')+')';await signOut(auth);return}
     $('acn').textContent=me.name;$('acc').textContent=me.code;
     uC=onSnapshot(query(collection(db,'chats'),where('members','array-contains',me.uid)),function(sn){
-      chats=sn.docs.map(function(d){return Object.assign({id:d.id},d.data())});
+      chats=sn.docs.map(function(d){return fixTs(Object.assign({id:d.id},d.data({serverTimestamps:'estimate'})))});
       chats.sort(function(a,b){return (b.ts||0)-(a.ts||0)});
       renderChats();
       if(cur){var c=chats.filter(function(x){return x.id===cur.id})[0];if(c){cur=c;$('cn').textContent=cname(c);$('cav').textContent=cname(c).charAt(0).toUpperCase()}}
