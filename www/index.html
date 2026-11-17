@@ -47,8 +47,8 @@ input:focus{outline:0;border-color:var(--text)}
 #s{background:var(--acc);color:var(--on);border:0;width:46px;height:46px}
 #s:hover{background:var(--acc);filter:brightness(.95)}
 #s:disabled{opacity:.4}
-#sheet,#rooms{position:fixed;inset:0;z-index:5;display:none;background:rgba(0,0,0,.5);align-items:flex-end;justify-content:center}
-#sheet.open,#rooms.open{display:flex}
+#sheet,#rooms,#cm{position:fixed;inset:0;z-index:5;display:none;background:rgba(0,0,0,.5);align-items:flex-end;justify-content:center}
+#sheet.open,#rooms.open,#cm.open{display:flex}
 .panel{width:100%;max-width:720px;background:var(--bg);color:var(--text);border:1.5px solid var(--border);border-bottom:0;border-radius:28px 28px 0 0;padding:18px 20px calc(20px + env(safe-area-inset-bottom,0px));max-height:88%;overflow-y:auto;animation:up .25s ease}
 @keyframes up{from{transform:translateY(40px);opacity:0}to{transform:none;opacity:1}}
 .ph{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
@@ -90,6 +90,10 @@ h3{font-size:13px;color:var(--muted);text-transform:lowercase;margin:20px 0 9px;
 .pw input{padding-right:54px}
 .eye{position:absolute;right:6px;top:50%;transform:translateY(-50%);width:42px;height:42px;border:0;background:transparent;color:var(--muted);display:grid;place-items:center;cursor:pointer;border-radius:50%;padding:0}
 .eye.on{color:var(--text)}
+.btn.danger{color:#ff5a4d;border-color:#ff5a4d}
+.mn{display:flex;flex-direction:column;gap:10px;margin-top:8px}
+.ver{color:var(--muted);font-size:12px;text-align:center;margin:18px 0 0}
+#blk{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px 16px;color:var(--muted);font-size:14px}
 .view{display:none;flex-direction:column;flex:1;min-height:0}
 .view.on{display:flex}
 #v-auth{align-items:center;justify-content:center;padding:24px}
@@ -141,8 +145,10 @@ h3{font-size:13px;color:var(--muted);text-transform:lowercase;margin:20px 0 9px;
     <button class="ib" id="bk" aria-label="Back"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></button>
     <div class="av" id="cav"></div>
     <div class="ttl"><b id="cn"></b><span class="sub" id="st"></span></div>
+    <button class="ib" id="mo" aria-label="Chat options"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg></button>
   </header>
   <div id="list"></div>
+  <div id="blk" style="display:none"><span>you blocked this chat</span><button class="btn" id="unb" style="flex:none">unblock</button></div>
   <form id="f" autocomplete="off">
     <input type="text" id="t" placeholder="say something…" maxlength="1000" aria-label="Message">
     <button class="ib" id="s" type="submit" aria-label="Send"><svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><path d="M3.4 20.4 21 12 3.4 3.6 3.3 10l12.6 2-12.6 2z"/></svg></button>
@@ -150,6 +156,12 @@ h3{font-size:13px;color:var(--muted);text-transform:lowercase;margin:20px 0 9px;
 </section>
 
 </div>
+
+<div id="cm"><div class="panel" role="dialog" aria-label="Chat options">
+  <div class="ph"><h2 id="cmt">chat</h2><button class="ib" id="cmx" aria-label="Close" style="color:var(--text)">✕</button></div>
+  <div class="mn"><button class="btn" id="mb">block</button><button class="btn danger" id="md">delete chat</button></div>
+  <p class="ver" style="text-align:left;margin-top:14px">deleting clears the chat for you only. blocking stops messages in both directions.</p>
+</div></div>
 
 <div id="rooms"><div class="panel" role="dialog" aria-label="Add person">
   <div class="ph"><h2>add people</h2><button class="ib" id="rx" aria-label="Close" style="color:var(--text)">✕</button></div>
@@ -164,6 +176,8 @@ h3{font-size:13px;color:var(--muted);text-transform:lowercase;margin:20px 0 9px;
   <div class="ph"><h2>settings</h2><button class="ib" id="x" aria-label="Close" style="color:var(--text)">✕</button></div>
   <h3>account</h3>
   <div class="acct"><div><b id="acn"></b><small>your code: <span id="acc"></span></small></div><button class="btn out" id="lo">log out</button></div>
+  <h3>notifications</h3>
+  <div class="tg"><div>message alerts<small id="nth">get notified when someone messages you</small></div><button id="ntf" aria-label="Notifications"></button></div>
   <h3>look</h3>
   <div class="seg" id="seg"><button data-v="system">system</button><button data-v="light">light</button><button data-v="dark">dark</button></div>
   <h3>chat color</h3>
@@ -171,13 +185,14 @@ h3{font-size:13px;color:var(--muted);text-transform:lowercase;margin:20px 0 9px;
   <h3>mood</h3>
   <div class="tg"><div>mood tint<small>background shifts with the vibe</small></div><button id="tint" aria-label="Mood tint"></button></div>
   <div class="prev"><div class="bubble them">hey, you up?</div><div class="bubble me">always. love this theme</div></div>
+  <p class="ver">tint v4</p>
 </div></div>
 
 <script src="firebase-config.js"></script>
 <script type="module">
 import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {getAuth,createUserWithEmailAndPassword,signInWithEmailAndPassword,signOut,onAuthStateChanged} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import {getFirestore,doc,getDoc,setDoc,updateDoc,addDoc,collection,query,orderBy,limit,where,onSnapshot,writeBatch,serverTimestamp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import {getFirestore,doc,getDoc,setDoc,updateDoc,addDoc,collection,query,orderBy,limit,where,onSnapshot,writeBatch,serverTimestamp,deleteField} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 var $=function(i){return document.getElementById(i)},root=document.documentElement,cfg=window.TINT_FIREBASE;
 var THEMES=[['Lime','#c8f542','#0d0d0f'],['Lilac','#c5b3ff','#0d0d0f'],['Peach','#ffb59e','#0d0d0f'],['Sky','#9fd6ff','#0d0d0f'],['Bubblegum','#ff9ed2','#0d0d0f'],['Mono','var(--text)','var(--bg)']];
@@ -185,15 +200,15 @@ var MOODS={calm:'#7fb8e0',happy:'#f5b82e',love:'#f06292',excited:'#a56ef0',sad:'
 var R={love:/❤|💕|😍|🥰|😘|💖|♥|\blove\b|miss you|\bxoxo\b|\bcute\b/gi,happy:/😂|😄|😊|🙂|😁|🤣|\blol\b|haha|\bhappy\b|great|yay|awesome|thanks|nice/gi,excited:/🤩|🥳|🎉|\bomg\b|\bwow\b|excited|let'?s go|!!+|amazing/gi,sad:/😢|😭|☹|💔|🥺|\bsad\b|sorry|\bcry|tired|lonely|\bugh\b/gi,angry:/😡|🤬|😤|\bangry\b|\bmad\b|\bhate\b|annoy|furious|wtf|stupid|shut up/gi};
 function detect(t){var b='calm',n=0;for(var k in R){var m=t.match(R[k]);if(m&&m.length>n){n=m.length;b=k}}if(!n&&t.length>5&&t===t.toUpperCase()&&/[A-Z]/.test(t))b='angry';return b}
 
-var S={mode:'system',theme:0,tint:true};
+var S={mode:'system',theme:0,tint:true,notify:false};
 try{var sv=JSON.parse(localStorage.getItem('moodroom')||'null');if(sv)S=Object.assign(S,sv)}catch(e){}
-function save(){try{localStorage.setItem('moodroom',JSON.stringify({mode:S.mode,theme:S.theme,tint:S.tint}))}catch(e){}}
+function save(){try{localStorage.setItem('moodroom',JSON.stringify({mode:S.mode,theme:S.theme,tint:S.tint,notify:S.notify}))}catch(e){}}
 function applyTheme(){
   if(S.mode==='system')root.removeAttribute('data-theme');else root.setAttribute('data-theme',S.mode);
   var th=THEMES[S.theme]||THEMES[0];root.style.setProperty('--acc',th[1]);root.style.setProperty('--on',th[2]);
   [].forEach.call($('seg').children,function(b){b.classList.toggle('on',b.dataset.v===S.mode)});
   [].forEach.call($('sw').children,function(b,i){b.classList.toggle('on',i===S.theme)});
-  $('tint').classList.toggle('on',S.tint);applyMood();
+  $('tint').classList.toggle('on',S.tint);$('ntf').classList.toggle('on',!!S.notify);applyMood();
 }
 THEMES.forEach(function(th,i){var b=document.createElement('button');b.innerHTML='<span class="dot" style="background:'+th[1]+'"></span>'+th[0].toLowerCase();b.onclick=function(){S.theme=i;save();applyTheme()};$('sw').appendChild(b)});
 $('seg').onclick=function(e){var v=e.target.dataset&&e.target.dataset.v;if(v){S.mode=v;save();applyTheme()}};
@@ -205,13 +220,18 @@ $('rx').onclick=function(){sheet('rooms',false)};
 $('rooms').onclick=function(e){if(e.target===$('rooms'))sheet('rooms',false)};
 addEventListener('keydown',function(e){if(e.key==='Escape'){sheet('sheet',false);sheet('rooms',false)}});
 
+var rawMsgs=[],allChats=[],firstSnap=true,lastTs={};
 var app,auth,db,me=null,chats=[],cur=null,msgs=[],uC=null,uM=null,pendName='',amode='in';
 var AERR={'auth/operation-not-allowed':'email sign-in is not turned on in firebase yet','auth/configuration-not-found':'email sign-in is not turned on in firebase yet','auth/invalid-api-key':'the firebase config looks wrong','auth/invalid-credential':'wrong email or password','auth/wrong-password':'wrong email or password','auth/user-not-found':'wrong email or password','auth/email-already-in-use':'that email already has an account','auth/weak-password':'password needs 6+ characters','auth/invalid-email':"that email doesn't look right",'auth/network-request-failed':'no connection','auth/too-many-requests':'too many tries, wait a bit'};
 function show(v){['auth','home','chat'].forEach(function(k){$('v-'+k).classList.toggle('on',k===v)})}
 function other(c){return c.members.filter(function(u){return u!==me.uid})[0]}
 function cname(c){var o=other(c);return (c.names&&c.names[o])||'chat'}
 function fmt(ts){try{var d=new Date(ts),n=new Date();return d.toDateString()===n.toDateString()?d.toLocaleTimeString([], {hour:'numeric',minute:'2-digit'}):d.toLocaleDateString([], {month:'short',day:'numeric'})}catch(e){return ''}}
-function fixTs(x){if(x.ts&&x.ts.toMillis)x.ts=x.ts.toMillis();return x}
+function fixTs(x){if(x.ts&&x.ts.toMillis)x.ts=x.ts.toMillis();if(x.hidden)for(var k in x.hidden)if(x.hidden[k]&&x.hidden[k].toMillis)x.hidden[k]=x.hidden[k].toMillis();return x}
+function hidOf(c){return (c.hidden&&c.hidden[me.uid])||0}
+function blockedByMe(c){return !!(c&&c.blockedBy&&c.blockedBy[me.uid])}
+function applyMsgs(force){var h=cur?hidOf(cur):0;msgs=rawMsgs.filter(function(m){return m.ts>h});renderMsgs();if(force)$('list').scrollTop=$('list').scrollHeight}
+function refreshChatUI(){if(!cur)return;var n=cname(cur);$('cn').textContent=n;$('cav').textContent=n.charAt(0).toUpperCase();var b=blockedByMe(cur);$('blk').style.display=b?'flex':'none';$('f').style.display=b?'none':''}
 function sepFmt(ts){try{var d=new Date(ts),t=d.toLocaleTimeString([], {hour:'numeric',minute:'2-digit'});return d.toDateString()===new Date().toDateString()?t:d.toLocaleDateString([], {weekday:'long',day:'numeric',month:'short'})+' • '+t}catch(e){return ''}}
 var AL='ABCDEFGHJKMNPQRSTUVWXYZ23456789';
 function genCode(){var c='';for(var i=0;i<6;i++)c+=AL[Math.floor(Math.random()*AL.length)];return c}
@@ -254,14 +274,14 @@ function renderMsgs(){
   applyMood();
 }
 function openChat(id){
-  var c=chats.filter(function(x){return x.id===id})[0]||{id:id,members:id.split('_'),names:{}};
+  var c=allChats.filter(function(x){return x.id===id})[0]||{id:id,members:id.split('_'),names:{}};
   var first=!cur||cur.id!==id;cur=c;
-  $('cn').textContent=cname(c);$('cav').textContent=cname(c).charAt(0).toUpperCase();
+  refreshChatUI();
   show('chat');
   if(first){
-    msgs=[];renderMsgs();if(uM){uM();uM=null}
+    rawMsgs=[];msgs=[];renderMsgs();if(uM){uM();uM=null}
     uM=onSnapshot(query(collection(db,'chats',id,'messages'),orderBy('ts','desc'),limit(150)),function(sn){
-      msgs=sn.docs.map(function(d){return fixTs(d.data({serverTimestamps:'estimate'}))}).reverse();renderMsgs();$('list').scrollTop=$('list').scrollHeight;
+      rawMsgs=sn.docs.map(function(d){return fixTs(d.data({serverTimestamps:'estimate'}))}).sort(function(a,b){return a.ts-b.ts});applyMsgs(true);
     },function(){$('st').textContent='could not load messages'});
   }
 }
@@ -281,7 +301,7 @@ $('f').addEventListener('submit',async function(ev){
   var m={uid:me.uid,name:me.name,text:text,ts:serverTimestamp(),mood:detect(text)};
   try{
     await addDoc(collection(db,'chats',cur.id,'messages'),m);
-    await updateDoc(doc(db,'chats',cur.id),{last:text.slice(0,80),ts:serverTimestamp()});
+    await updateDoc(doc(db,'chats',cur.id),{last:text.slice(0,80),ts:serverTimestamp(),lastBy:me.uid});
   }catch(e){$('t').value=text;$('st').textContent='could not send';setTimeout(function(){$('st').textContent=''},3000)}
 });
 
@@ -321,11 +341,41 @@ $('jn').onclick=async function(){
     if(!d.exists()){er.textContent='no one has that code';return}
     var f=d.data(),ids=[me.uid,f.uid].sort(),id=ids.join('_'),names={};names[me.uid]=me.name;names[f.uid]=f.name;
     await setDoc(doc(db,'chats',id),{members:ids,names:names},{merge:true});
+    try{var hk={};hk['hidden.'+me.uid]=deleteField();await updateDoc(doc(db,'chats',id),hk)}catch(e){}
     $('joinc').value='';sheet('rooms',false);location.hash='#c/'+id;
   }catch(e){er.textContent='could not add. check your connection'}
   finally{$('jn').disabled=false}
 };
 $('lo').onclick=function(){sheet('sheet',false);location.hash='';if(auth)signOut(auth)};
+
+var armB=false,armD=false;
+$('mo').onclick=function(){armB=armD=false;var b=blockedByMe(cur);$('cmt').textContent=cname(cur);$('mb').textContent=b?'unblock':'block';$('md').textContent='delete chat';sheet('cm',true)};
+$('cmx').onclick=function(){sheet('cm',false)};
+$('cm').onclick=function(e){if(e.target===$('cm'))sheet('cm',false)};
+async function setBlock(on){
+  var ref=doc(db,'chats',cur.id),u={};u['blockedBy.'+me.uid]=on?true:deleteField();
+  try{await updateDoc(ref,u)}catch(e){$('st').textContent='could not update';setTimeout(function(){$('st').textContent=''},3000)}
+}
+$('mb').onclick=async function(){
+  if(blockedByMe(cur)){sheet('cm',false);await setBlock(false);return}
+  if(!armB){armB=true;this.textContent='tap again to block';return}
+  sheet('cm',false);await setBlock(true);
+};
+$('unb').onclick=function(){setBlock(false)};
+$('md').onclick=async function(){
+  if(!armD){armD=true;this.textContent='tap again to delete';return}
+  sheet('cm',false);var id=cur.id,u={};u['hidden.'+me.uid]=serverTimestamp();
+  try{await updateDoc(doc(db,'chats',id),u);location.hash=''}catch(e){$('st').textContent='could not delete'}
+};
+
+var LN=(window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.LocalNotifications)||null;
+async function askNotify(){try{if(LN){var r=await LN.requestPermissions();return r.display==='granted'}if(window.Notification)return (await Notification.requestPermission())==='granted'}catch(e){}return false}
+function notify(title,body){try{if(LN)LN.schedule({notifications:[{id:Date.now()%2147480000,title:title,body:body,schedule:{at:new Date(Date.now()+300)}}]});else if(window.Notification&&Notification.permission==='granted')new Notification(title,{body:body})}catch(e){}}
+$('ntf').onclick=async function(){
+  if(!S.notify){var ok=await askNotify();S.notify=ok;$('nth').textContent=ok?'on. you will be notified of new messages':'allow notifications for tint in your phone settings'}
+  else{S.notify=false;$('nth').textContent='get notified when someone messages you'}
+  save();applyTheme();
+};
 
 async function makeProfile(u,name){
   for(var i=0;i<8;i++){
@@ -346,6 +396,7 @@ else{
   app=initializeApp(cfg);auth=getAuth(app);db=getFirestore(app);
   onAuthStateChanged(auth,async function(u){
     if(uC){uC();uC=null}if(uM){uM();uM=null}
+    firstSnap=true;lastTs={};
     if(!u){me=null;chats=[];cur=null;show('auth');return}
     try{
       var d=await getDoc(doc(db,'users',u.uid));
@@ -353,10 +404,20 @@ else{
     }catch(e){$('aerr').textContent=e&&e.code==='permission-denied'?'firebase rules are not set up yet':'could not load your account ('+((e&&e.code)||'error')+')';await signOut(auth);return}
     $('acn').textContent=me.name;$('acc').textContent=me.code;
     uC=onSnapshot(query(collection(db,'chats'),where('members','array-contains',me.uid)),function(sn){
-      chats=sn.docs.map(function(d){return fixTs(Object.assign({id:d.id},d.data({serverTimestamps:'estimate'})))});
+      allChats=sn.docs.map(function(d){return fixTs(Object.assign({id:d.id},d.data({serverTimestamps:'estimate'})))});
+      if(!firstSnap&&S.notify)sn.docChanges().forEach(function(ch){
+        if(ch.type==='removed'||ch.doc.metadata.hasPendingWrites)return;
+        var d=fixTs(Object.assign({id:ch.doc.id},ch.doc.data({serverTimestamps:'estimate'})));
+        var fresh=d.ts&&d.ts>(lastTs[d.id]||0);
+        var muted=(d.blockedBy&&Object.keys(d.blockedBy).length)||(hidOf(d)&&hidOf(d)>=d.ts);
+        if(fresh&&d.lastBy&&d.lastBy!==me.uid&&!muted&&(document.hidden||!cur||cur.id!==d.id))notify(cname(d),d.last||'new message');
+      });
+      allChats.forEach(function(c){lastTs[c.id]=c.ts||0});
+      firstSnap=false;
+      chats=allChats.filter(function(c){return !hidOf(c)||(c.ts||0)>hidOf(c)});
       chats.sort(function(a,b){return (b.ts||0)-(a.ts||0)});
       renderChats();
-      if(cur){var c=chats.filter(function(x){return x.id===cur.id})[0];if(c){cur=c;$('cn').textContent=cname(c);$('cav').textContent=cname(c).charAt(0).toUpperCase()}}
+      if(cur){var c=allChats.filter(function(x){return x.id===cur.id})[0];if(c){cur=c;refreshChatUI();applyMsgs(false)}}
     },function(){});
     route();
   });
