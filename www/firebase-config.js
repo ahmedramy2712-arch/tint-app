@@ -1,9 +1,9 @@
-// Paste your Firebase web app config here (Firebase console > Project settings > Your apps > Web app).
+// Firebase web app config
 window.TINT_FIREBASE = {
-  apiKey: "PASTE_HERE",
-  authDomain: "PASTE_HERE",
-  projectId: "PASTE_HERE",
-  storageBucket: "PASTE_HERE",
-  messagingSenderId: "PASTE_HERE",
-  appId: "PASTE_HERE"
+  apiKey: "AIzaSyBfBiFTmSV_0GslHARU-PVdjDtPAd6OpLg",
+  authDomain: "tint-c928f.firebaseapp.com",
+  projectId: "tint-c928f",
+  storageBucket: "tint-c928f.firebasestorage.app",
+  messagingSenderId: "793694156603",
+  appId: "1:793694156603:web:b94e9d7c0b406a630b291e"
 };
